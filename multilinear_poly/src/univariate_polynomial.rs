@@ -142,16 +142,6 @@ fn poly_addition(vec1: Vec<isize>, vec2: Vec<isize>) -> Vec<isize> {
     vec_result
 }
 
-// fn poly_addition(vec1: Vec<usize>, vec2: Vec<usize>) -> Vec<usize> {
-//     let mut vec_result = vec![0; vec1.len().max(vec2.len())]; // Initialize with the maximum length
-//     for i in 0..vec_result.len() {
-//         let val1 = if i < vec1.len() { vec1[i] } else { 0 }; // Get value from vec1 or 0 if out of bounds
-//         let val2 = if i < vec2.len() { vec2[i] } else { 0 }; // Get value from vec2 or 0 if out of bounds
-//         vec_result[i] = val1 + val2; // Sum the values
-//     }
-//     vec_result
-// }b
-
 fn scalar_multiplication(scalar: isize, vec: Vec<isize>) -> Vec<isize> {
     let mut vec_result = Vec::new();
     for i in 0..vec.len() {
@@ -161,25 +151,82 @@ fn scalar_multiplication(scalar: isize, vec: Vec<isize>) -> Vec<isize> {
 }
 
 
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_scalar_multiplication() {
+        let vec = vec![1, 2, 3];
+        let result = scalar_multiplication(2, vec);
+        assert_eq!(result, vec![2, 4, 6]);
+    }
+
+    #[test]
+    fn test_poly_multiplication() {
+        let vec1 = vec![2, 3];
+        let vec2 = vec![4, 6];
+        let result = poly_multiplication(vec1, vec2);
+        assert_eq!(result, vec![8, 18, 36]);
+    }
+
+    #[test]
+    fn test_poly_addition() {
+        let vec1 = vec![2, 3];
+        let vec2 = vec![4, 6];
+        let result = poly_addition(vec1, vec2);
+        assert_eq!(result, vec![6, 9, 6]);
+    }
+
+    #[test]
+    fn test_lagrange_basis() {
+        let xs = vec![1, 2, 3];
+        let result = lagrange_basis(2, &xs);
+        assert_eq!(result.0, vec![1, -1, 1]);
+        
+    }
+
+}
 
 
 
-// fn interpolate(points: Vec<(usize, usize)>) -> UnivariatePoly {
-//     //get interpolating set
 
-//     for (x, y) in  &points {
 
+// let vec1 = vec![0,2, 3];
+    // let vec2 = vec![2, 3];
+    // let vec3 = vec![2, 3];
+    // let vec4 = vec![2, 4, 6];
+    // let vec4 = vec![1,2];
+    // let vec_result = poly_multiplication(vec1, vec2);
+    //  println!("{:?}", vec_result);
+    //  let vec_result1 = scalar_multiplication(2, vec3);
+    //  println!("{:?}", vec_result1);
+    //  let vec_result2 = poly_addition(vec1, vec2);
+    //  println!("{:?}", vec_result2);
+    //  let vec_result3 = lagrange_basis(1, &vec4);
+    //  println!("{:?}", vec_result3);
+
+
+
+
+
+
+
+
+
+
+
+// fn poly_addition(vec1: Vec<usize>, vec2: Vec<usize>) -> Vec<usize> {
+//     let mut vec_result = vec![0; vec1.len().max(vec2.len())]; // Initialize with the maximum length
+//     for i in 0..vec_result.len() {
+//         let val1 = if i < vec1.len() { vec1[i] } else { 0 }; // Get value from vec1 or 0 if out of bounds
+//         let val2 = if i < vec2.len() { vec2[i] } else { 0 }; // Get value from vec2 or 0 if out of bounds
+//         vec_result[i] = val1 + val2; // Sum the values
 //     }
+//     vec_result
 // }
 
-// fn interpolate(ys: Vec<usize, usize>) -> UnivariatePoly {
-
-// }
-
-
-// fn lagrange_interpolation(xs: Vec<usize>, ys: Vec<usize>) -> UnivariatePoly {
-
-// // }WWWWWW  
+ 
 // fn lagrange_basis(input: isize, interpolating_set: Vec<isize>) -> (Vec<isize>, isize) {
 //     let mut numerator = vec![1;interpolating_set.len()];
 //     let mut denominator = 0;
