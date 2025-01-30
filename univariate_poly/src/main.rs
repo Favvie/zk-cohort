@@ -1,20 +1,25 @@
 use std::vec;
+use ark_ff::PrimeField;
 
 fn main(){
+    // let xs = vec![1.0, 3.0, 4.0];
+    // let ys = vec![45.0, 205.0, 330.0];
+    // let result = interpolate(xs, ys);
+    // println!("result{:?}", result);
     println!("Hello, world!");
-    }
-
-#[derive(Debug)]
-struct UnivariatePoly {
-    coeffs: Vec<isize>,
 }
 
-impl UnivariatePoly {
-    fn evaluate(&self, _x: isize) -> isize {
-        let mut result = 0;
+#[derive(Debug)]
+struct UnivariatePoly<F: PrimeField> {
+    coeffs: Vec<F>,
+}
+
+impl <F: PrimeField>UnivariatePoly<F> {
+    fn evaluate(&self, _x: F) -> F {
+        let mut result = F::zero();
         
         for i in 0..self.coeffs.len() {
-                result +=   self.coeffs[i] * isize::pow(_x, i as u32);
+                result +=  self.coeffs[i] * _x.pow([i as u64]);
             }
         result
     }
@@ -26,19 +31,19 @@ impl UnivariatePoly {
 
 }
 
-fn interpolate(xs: Vec<isize>, ys: Vec<isize>) -> UnivariatePoly {
+fn interpolate<F: PrimeField>(xs: Vec<F>, ys: Vec<F>) -> UnivariatePoly<F> {
     if xs.len() != ys.len() {
         panic!("xs and ys must have the same length");
     }
 
-    let mut result_poly: Vec<isize> = vec![0; xs.len()];
+    let mut result_poly: Vec<F> = vec![F::zero(); xs.len()];
 
     for i in 0..xs.len() {
         let (numerator, denominator) = lagrange_basis(xs[i], &xs);
         println!("numerator {:?}", numerator);
         println!("denominator {}", denominator);
 
-        let scaled_numerator = scalar_multiplication(ys[i] / denominator, numerator);
+        let scaled_numerator = scalar_multiplication((ys[i] / denominator), numerator);
         println!("scaled_numerator {:?}", scaled_numerator);
         
         // Add the current polynomial to the result
@@ -51,49 +56,45 @@ fn interpolate(xs: Vec<isize>, ys: Vec<isize>) -> UnivariatePoly {
 }
 
 
-fn lagrange_basis(input: isize, interpolating_set: &Vec<isize>) -> (Vec<isize>, isize) {
-    let mut numerator: Vec<isize> = vec![1]; // Start with the polynomial 1
-    let mut denominator = 1; // Initialize denominator
+fn lagrange_basis<F: PrimeField>(input: F, interpolating_set: &Vec<F>) -> (Vec<F>, F) {
+    let mut numerator: Vec<F> = vec![F::one()]; // Start with the polynomial 1
+    let mut denominator = F::one(); // Initialize denominator
 
     for i in 0..interpolating_set.len() {
         if interpolating_set[i] != input {
             // Create the polynomial for the current point
-            let current_poly = vec![-interpolating_set[i], 1]; // Represents (x - x_i)
+            let current_poly = vec![-interpolating_set[i], F::one()]; // Represents (x - x_i)
 
             // Multiply the current polynomial with the existing numerator
             numerator = poly_multiplication(numerator , current_poly);
             
-            let mut result = 0;
+            let mut result = F::zero();
             
             for i in 1..numerator.len() {
-                result +=   numerator[i] * isize::pow(input, i as u32);
+                result += numerator[i] * input.pow([i as u64]);
             }
 
             denominator = numerator[0] + result;
-
-            
-
         }
     }
     (numerator, denominator)
 }
 
-fn poly_multiplication(vec1: Vec<isize>, vec2: Vec<isize>) -> Vec<isize> {
+fn poly_multiplication<F: PrimeField>(vec1: Vec<F>, vec2: Vec<F>) -> Vec<F> {
     // let mut vec_result = Vec::new();
-    let mut vec_result = vec![0; vec1.len() + vec2.len() - 1];
+    let mut vec_result: Vec<F> = vec![F::zero(); vec1.len() + vec2.len() - 1];
     for i in 0..vec1.len() {
         for j in 0..vec2.len() {
             
                 let index = i + j;
-                vec_result[index] += vec1[i] * vec2[j];
-            
+                vec_result[index] += ((vec1[i] * vec2[j]) / F::one()) as F;
         }
     }
     vec_result
 }
 
-fn poly_addition(vec1: Vec<isize>, vec2: Vec<isize>) -> Vec<isize> {
-    let mut vec_result = Vec::new();
+fn poly_addition<F: PrimeField>(vec1: Vec<F>, vec2: Vec<F>) -> Vec<F> {
+    let mut vec_result: Vec<F> = Vec::new();
     if vec1.len() > vec2.len() {
         vec_result = vec1;
         for i in 0..vec2.len() {
@@ -119,8 +120,8 @@ fn poly_addition(vec1: Vec<isize>, vec2: Vec<isize>) -> Vec<isize> {
     vec_result
 }
 
-fn scalar_multiplication(scalar: isize, vec: Vec<isize>) -> Vec<isize> {
-    let mut vec_result = Vec::new();
+fn scalar_multiplication<F: PrimeField>(scalar: F, vec: Vec<F>) -> Vec<F> {
+    let mut vec_result: Vec<F> = Vec::new();
     for i in 0..vec.len() {
         vec_result.push(vec[i] * scalar);
     }
@@ -131,35 +132,37 @@ fn scalar_multiplication(scalar: isize, vec: Vec<isize>) -> Vec<isize> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use ark_ff::Field;
+    use ark_bn254::Fr;
 
     #[test]
     fn test_scalar_multiplication() {
-        let vec = vec![1, 2, 3];
-        let result = scalar_multiplication(2, vec);
-        assert_eq!(result, vec![2, 4, 6]);
+        let vec = vec![Fr::from(1), Fr::from(2), Fr::from(3)];
+        let result = scalar_multiplication(Fr::from(2), vec);
+        assert_eq!(result, vec![Fr::from(2), Fr::from(4), Fr::from(6)]);
     }
 
     #[test]
     fn test_poly_multiplication() {
-        let vec1 = vec![2, 3];
-        let vec2 = vec![4, 6];
-        let result = poly_multiplication(vec1, vec2);
-        assert_eq!(result, vec![8, 24, 18]);
+        let vec1 = vec![Fr::from(2), Fr::from(3)];
+        let vec2 = vec![Fr::from(4), Fr::from(6)];
+        let result = poly_multiplication::<Fr>(vec1, vec2);
+        assert_eq!(result, vec![Fr::from(8), Fr::from(24), Fr::from(18)]);
     }
 
     #[test]
     fn test_poly_addition() {
-        let vec1 = vec![2, 3];
-        let vec2 = vec![4, 6];
+        let vec1 = vec![Fr::from(2), Fr::from(3)];
+        let vec2 = vec![Fr::from(4), Fr::from(6)];
         let result = poly_addition(vec1, vec2);
-        assert_eq!(result, vec![6, 9]);
+        assert_eq!(result, vec![Fr::from(6), Fr::from(9)]);
     }
 
     #[test]
     fn test_lagrange_basis() {
-        let xs = vec![1, 2, 3];
-        let result = lagrange_basis(2, &xs);
-        assert_eq!(result.0, vec![3, -4, 1]);
+        let xs = vec![Fr::from(1), Fr::from(2), Fr::from(3)];
+        let result = lagrange_basis(Fr::from(2), &xs);
+        assert_eq!(result.0, vec![Fr::from(3), Fr::from(-4), Fr::from(1)]);
         
     }
 
@@ -204,7 +207,7 @@ mod tests {
 // }
 
  
-// fn lagrange_basis(input: isize, interpolating_set: Vec<isize>) -> (Vec<isize>, isize) {
+// fn lagrange_basis(input: f64, interpolating_set: Vec<f64>) -> (Vec<f64>, f64) {
 //     let mut numerator = vec![1;interpolating_set.len()];
 //     let mut denominator = 0;
 //     for i in 0..interpolating_set.len() {
@@ -217,30 +220,30 @@ mod tests {
 //     let mut result = 0;
 //     for i in 1..numerator.len()  {
 //         // result = result + (input * numerator[i]).pow(i as u32);
-//         result +=  numerator[i] * isize::pow(input, i as u32);
+//         result +=  numerator[i] * f64::pow(input, i as u32);
 //     }
 //     denominator = numerator[0] + result;
 //     (numerator, denominator)
 // }
 
-// fn test_deno(input: Vec<isize>) -> isize {
+// fn test_deno(input: Vec<f64>) -> f64 {
 //     let mut result = 0;
 //     for i in 1..input.len()  {
-//         result = result +  input[i] * isize::pow(2, i as u32);
+//         result = result +  input[i] * f64::pow(2, i as u32);
 //     }
 //     result
 // }
 
-// fn test_deno(input: Vec<isize>) -> isize {
+// fn test_deno(input: Vec<f64>) -> f64 {
 //     let mut result = 0;
 //     // for i in 1..input.len() {
-//     //     result += input[i] * 2isize.pow(i as u32);
+//     //     result += input[i] * 2f64.pow(i as u32);
 //     // }
 //     // result
 
 //     // let mut result = 0;
 //     for i in 0..input.len() {
-//         result = result + input[i] * 2isize.pow(i as u32);
+//         result = result + input[i] * 2f64.pow(i as u32);
 //     }
 //     result
 // }
