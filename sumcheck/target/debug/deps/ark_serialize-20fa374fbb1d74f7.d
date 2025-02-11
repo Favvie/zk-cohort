@@ -1,0 +1,9 @@
+/Users/favourabangwu/Documents/zk-cohort/sumcheck/target/debug/deps/libark_serialize-20fa374fbb1d74f7.rmeta: /Users/favourabangwu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ark-serialize-0.5.0/src/lib.rs /Users/favourabangwu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ark-serialize-0.5.0/src/error.rs /Users/favourabangwu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ark-serialize-0.5.0/src/flags.rs /Users/favourabangwu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ark-serialize-0.5.0/src/impls.rs /Users/favourabangwu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ark-serialize-0.5.0/src/../README.md
+
+/Users/favourabangwu/Documents/zk-cohort/sumcheck/target/debug/deps/ark_serialize-20fa374fbb1d74f7.d: /Users/favourabangwu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ark-serialize-0.5.0/src/lib.rs /Users/favourabangwu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ark-serialize-0.5.0/src/error.rs /Users/favourabangwu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ark-serialize-0.5.0/src/flags.rs /Users/favourabangwu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ark-serialize-0.5.0/src/impls.rs /Users/favourabangwu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ark-serialize-0.5.0/src/../README.md
+
+/Users/favourabangwu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ark-serialize-0.5.0/src/lib.rs:
+/Users/favourabangwu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ark-serialize-0.5.0/src/error.rs:
+/Users/favourabangwu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ark-serialize-0.5.0/src/flags.rs:
+/Users/favourabangwu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ark-serialize-0.5.0/src/impls.rs:
+/Users/favourabangwu/.cargo/registry/src/index.crates.io-6f17d22bba15001f/ark-serialize-0.5.0/src/../README.md:

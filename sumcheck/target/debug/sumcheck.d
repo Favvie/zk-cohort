@@ -1,0 +1,1 @@
+/Users/favourabangwu/Documents/zk-cohort/sumcheck/target/debug/sumcheck: /Users/favourabangwu/Documents/zk-cohort/sumcheck/src/main.rs /Users/favourabangwu/Documents/zk-cohort/sumcheck/src/transcript.rs
