@@ -1,10 +1,12 @@
-use std::marker::PhantomData;
+use std::{marker::PhantomData, vec};
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter;
 
 use ark_ff::PrimeField;
 fn main() {
     println!("Hello, world!");
 }
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, EnumIter)]
 enum GateOp {
     Add,
     Mul
@@ -85,6 +87,41 @@ impl Circuit {
         }
         // how do i get to the next layer?
         current_layer[0]
+    }
+
+    fn add_i_mle<F:PrimeField>(&mut self, layer_id: usize) -> Vec<Vec<F>> {
+        let layer_vec = &self.layers[layer_id];
+
+        if layer_vec.is_empty() {
+        return vec![vec![F::zero(); 2], vec![F::zero(); 2]];
+    }
+
+        let no_of_gates = layer_vec.len() * 2;
+        let no_of_bit_in_gate_input_index = (no_of_gates as f64 ).log2().ceil().max(1.0) as usize;
+        let no_of_bit_in_gate_output_index = if no_of_bit_in_gate_input_index == 1 { 1 } else { no_of_bit_in_gate_input_index - 1 };
+
+        let total_no_of_bits = no_of_bit_in_gate_input_index * 2 + no_of_bit_in_gate_output_index;
+        
+        println!("no bit input:{} no bits output{}", no_of_bit_in_gate_input_index, no_of_bit_in_gate_output_index);
+        let vector_size = 1 << total_no_of_bits;
+        let mut add_vec = vec![F::zero(); vector_size];
+        let mut mul_vec = vec![F::zero(); vector_size];
+
+        for gate in layer_vec {
+            let gate_op = &gate.op;
+
+            let mut res = gate.output_index << no_of_bit_in_gate_input_index | gate.left_index;
+            res = res << no_of_bit_in_gate_input_index | gate.right_index;
+            if let GateOp::Add = gate_op {
+                
+                add_vec[res] = F::one();
+            } else if let GateOp::Mul = gate_op {
+
+                mul_vec[res] = F::one();
+            }
+        }
+        
+        vec![add_vec, mul_vec]
     }
 }
 
@@ -191,4 +228,66 @@ mod tests {
         
         // Fix: Redesign circuit so all inputs needed are available at each layer
     }
-}
+
+    #[test]
+    fn test_add_i_mle_single_bit() {
+        // With 2 gates, indices should be sequential: 0,1,2,3
+        let gate_add = Gate::new(0, 1, 0, GateOp::Add);  // First computation
+        // let gate_mul = Gate::new(2, 3, 1, GateOp::Mul);  // Uses intermediate result
+        
+        let mut circuit = Circuit::new(vec![vec![gate_add]]);
+        let result = circuit.add_i_mle::<Fr>(0);
+        
+        // 1 gate = 1 bit needed per index
+        assert_eq!(result[0].len(), 8);  // 2^3 = 8
+        assert_eq!(result[1].len(), 8);
+        
+        // For Add gate: left=0, right=1, output=2
+        // let add_index = 0 + 1*2 + 2*4 + 1;
+        assert_eq!(result[0][1], f(1));
+        // dbg!(&result);
+        
+        // For Mul gate: left=2, right=1, output=3
+        // let mul_index = 2 + 1*2 + 3*4 + 1;
+        assert!(result[1].iter().all(|x| *x == f(0)));
+    }
+
+    #[test]
+    fn test_add_i_mle_two_bit_input() {
+        // With 4 gates, indices should be sequential: 0,1,2,3,4,5
+        let layer1 = vec![
+            Gate::new(0, 1, 0, GateOp::Add),  // 3 + 4 = 7 -> output[0]
+            Gate::new(2, 3, 1, GateOp::Mul),  // 4 * 5 = 20 -> output[1]
+        ];
+        let layer2 = vec![
+            Gate::new(0, 1, 0, GateOp::Mul),  // 7 * 20 = 140 -> output[0]
+        ];
+        let mut circuit = Circuit::new(vec![layer1, layer2]);
+        // let input = vec![f(3), f(4), f(5)];
+        let result = circuit.add_i_mle::<Fr>(0);
+        
+        // 4 gates = 2 bits needed per index
+        assert_eq!(result[0].len(), 32);  // 2^6 = 64
+        assert_eq!(result[1].len(), 32);
+        dbg!(&result);
+        
+        // For Add gate: left=0, right=1, output=2
+        // let add_index = 0 + 1*(1<<2) + 2*(1<<4) + 1;
+        assert_eq!(result[0][1], f(1));
+        
+        // // For Mul gate: left=2, right=3, output=4
+        // let mul_index = 2 + 3*(1<<2) + 4*(1<<4) + 1;
+        assert_eq!(result[1][27], f(1));
+    }
+
+    #[test]
+    fn test_add_i_mle_empty_layer() {
+        let mut circuit = Circuit::new(vec![vec![]]);
+        let result = circuit.add_i_mle::<Fr>(0);
+        
+        assert_eq!(result[0].len(), 2);
+        assert_eq!(result[1].len(), 2);
+        assert!(result[0].iter().all(|x| *x == f(0)));
+        assert!(result[1].iter().all(|x| *x == f(0)));
+    }
+    }
