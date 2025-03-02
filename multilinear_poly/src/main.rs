@@ -1,5 +1,3 @@
-use std::result;
-
 use ark_ff::PrimeField;
 
 fn main() {
